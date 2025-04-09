@@ -60,8 +60,8 @@ int32_t Window::WindowCount = 0;
 */
 Window::Window() :
 	window(nullptr),
-	width(1024),
-	height(768),
+	width(1920),
+	height(1080),
 	title("Trayracer")
 {
 	
@@ -214,11 +214,11 @@ Window::Open()
 
 		// setup stuff
 		glEnable(GL_FRAMEBUFFER_SRGB);
-		glEnable(GL_LINE_SMOOTH);
-		glEnable(GL_POLYGON_SMOOTH);
+		//glEnable(GL_LINE_SMOOTH);
+		//glEnable(GL_POLYGON_SMOOTH);
 		//glEnable(GL_MULTISAMPLE);
-		glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-		glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+		//glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+		//glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 
 		// setup viewport
 		glViewport(0, 0, this->width, this->height);
@@ -242,8 +242,8 @@ Window::Open()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_FLOAT, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0);
@@ -314,7 +314,7 @@ Window::Blit(float const* data, int w, int h)
 
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, frameCopy);
-	glBlitFramebuffer(0, 0, w, h, 0, 0, this->width, this->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	glBlitFramebuffer(0, 0, w, h, 0, 0, this->width, this->height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 	
 	// switch back to default read buffer
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
