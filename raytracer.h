@@ -10,12 +10,17 @@
 //------------------------------------------------------------------------------
 /**
 */
+
+
 class Raytracer
 {
 public:
+   
     Raytracer(unsigned w, unsigned h, std::vector<Color>& frameBuffer, unsigned rpp, unsigned bounces);
-    ~Raytracer() { }
 
+    ~Raytracer() { }
+    
+    unsigned totalRaytracers;
     // start raytracing!
     void Raytrace();
 
@@ -45,6 +50,8 @@ public:
     
     // rays per pixel
     unsigned rpp;
+
+   
     // max number of bounces before termination
     unsigned bounces = 5;
 

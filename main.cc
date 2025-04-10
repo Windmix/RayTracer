@@ -23,9 +23,9 @@ void WritePNG(const std::vector<Color>& framebuffer, int width, int height, cons
         imageData[i * 3 + 1] = static_cast<unsigned char>(std::min(255.0f, framebuffer[i].g * 255.0f)); // Green
         imageData[i * 3 + 2] = static_cast<unsigned char>(std::min(255.0f, framebuffer[i].b * 255.0f)); // Blue
     }
-
     // Write the image to a PNG file
-    stbi_write_png(filename.c_str(), width, height, 3, imageData.data(), width * 3);
+    stbi_write_png(("./images/" + filename).c_str(), width, height, 3, imageData.data(), width * 3);
+
 }
 
 
@@ -33,8 +33,8 @@ int main(int argc, char** argv)
 { 
 
     // Check if the correct number of arguments is passed
-    if (argc < 4) {
-        std::cerr << "Usage: " << argv[0] << " <width> <height> <rays_per_pixel> [output_filename]" << std::endl;
+    if (argc < 5) {
+        std::cerr << "Usage: " << argv[0] << " <width> <height> <rays_per_pixel> <ammountOfSphere> [output_filename]" << std::endl;
         return 1;
     }
 
@@ -42,12 +42,13 @@ int main(int argc, char** argv)
     int width = std::stoi(argv[1]);        // Image width
     int height = std::stoi(argv[2]);       // Image height
     int raysPerPixel = std::stoi(argv[3]); // Rays per pixel
+    int ammountOfSpheres = std::stoi(argv[4]); // ammount of spheres;
     int maxBounces = 5;
 
-    std::string outputFilename = (argc > 4) ? argv[4] : "output.png"; //output file, defaults to "output.png"
+    std::string outputFilename = (argc > 5) ? argv[5] : "output.png"; //output file, defaults to "output.png"
 
     std::cout << "Rendering image with the following parameters:" << std::endl;
-    std::cout << "Width: " << width << ", Height: " << height << ", Rays per pixel: " << raysPerPixel << std::endl;
+    std::cout << "Width: " << width << ", Height: " << height << ", Rays per pixel: " << raysPerPixel <<", Ammount of spheres: " << ammountOfSpheres << std::endl;
     std::cout << "Output filename: " << outputFilename <<"\n\nrendering........" << std::endl;
 
     // Define the size of the image for benchmarking
@@ -67,7 +68,7 @@ int main(int argc, char** argv)
     Sphere* ground = new Sphere(1000, { 0,-1000, -1 }, mat);
     rt.AddObject(ground);
 
-    for (int it = 0; it < 12; it++)
+    for (int it = 0; it < ammountOfSpheres; it++)
     {
         {
             Material* mat = new Material();
@@ -145,7 +146,8 @@ int main(int argc, char** argv)
     auto t1 = std::chrono::high_resolution_clock::now();
 
     double frameTime = std::chrono::duration<double, std::milli>(t1 - t0).count();
-    std::cout << "Render time: " << frameTime << " ms\n";
+    std::cout << "render complete, render time: " << frameTime << " ms\n";
+    std::cout << "total Ammount Of Ray Tracers " << rt.totalRaytracers << std::endl;
 
     WritePNG(framebuffer, width, height, outputFilename);
 

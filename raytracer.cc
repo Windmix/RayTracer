@@ -11,7 +11,7 @@ Raytracer::Raytracer(unsigned w, unsigned h, std::vector<Color>& frameBuffer, un
     width(w),
     height(h)
 {
-    // empty
+    totalRaytracers = 0;
 }
 
 //------------------------------------------------------------------------------
@@ -39,6 +39,7 @@ Raytracer::Raytrace()
                 
                 Ray* ray = new Ray(get_position(this->view), direction);
                 color += this->TracePath(*ray, 0);
+                
                 delete ray;
             }
 
@@ -48,7 +49,9 @@ Raytracer::Raytrace()
             color.b /= this->rpp;
 
             this->frameBuffer[y * this->width + x] += color;
+            totalRaytracers += this->rpp;
         }
+        
     }
 }
 
