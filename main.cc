@@ -146,8 +146,16 @@ int main(int argc, char** argv)
     auto t1 = std::chrono::high_resolution_clock::now();
 
     double frameTime = std::chrono::duration<double, std::milli>(t1 - t0).count();
-    std::cout << "render complete, render time: " << frameTime << " ms\n";
-    std::cout << "total Ammount Of Ray Tracers " << rt.totalRaytracers << std::endl;
+
+    // Calculate rays per second (MRays/s)
+    double totalRays = rt.totalRaytracers;  // Total number of rays
+    double totalTime = frameTime / 1000.0;  // Convert milliseconds to seconds
+    double mRaysPerSecond = totalRays / totalTime / 1e6;  // Mega-rays per second
+
+
+    std::cout << "render complete, render time: " << totalTime << " s\n";
+    std::cout << "total Ammount Of Ray Tracers: " << totalRays << std::endl;
+    std::cout << "Mega-rays per second: " << mRaysPerSecond << " MRays/s" << std::endl;
 
     WritePNG(framebuffer, width, height, outputFilename);
 
