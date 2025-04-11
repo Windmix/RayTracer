@@ -14,20 +14,20 @@ public:
         this->UpdateIsZeroVariable();
     }
 
-    vec3(double x, double y, double z) : x(x), y(y), z(z)
+    vec3(float x, float y, float z) : x(x), y(y), z(z)
     {
         this->UpdateIsNormalizedVariable();
         this->UpdateIsZeroVariable();
     }
 
-    vec3(std::initializer_list<double> const il)
+    vec3(std::initializer_list<float> const il)
     {
         assert(il.size() == 3);
 
         int i = 0;
         for (auto v : il)
         {
-            double* d = reinterpret_cast<double*>(this);
+            float* d = reinterpret_cast<float*>(this);
             d += i;
             *d = v;
             i++;
@@ -56,7 +56,7 @@ public:
     vec3 operator-() { return {-x, -y, -z};}
     vec3 operator*(float const c) { return {x * c, y * c, z * c};}
 
-    double x, y, z;
+    float x, y, z;
 
     bool IsNormalized()
     {
@@ -79,19 +79,19 @@ private:
 };
 
 // Get length of 3D vector
-inline double len(vec3 const& v)
+inline float len(vec3 const& v)
 {
-    double a = v.x * v.x;
+    float a = v.x * v.x;
     a = a + v.y * v.y;
     a = a + v.z * v.z;
-    double l = sqrt(a);
+    float l = sqrt(a);
     return l;
 }
 
 // Get normalized version of v
 inline vec3 normalize(vec3 v)
 {
-    double l = len(v);
+    float l = len(v);
     if (l == 0)
         return vec3(0,0,0);
 

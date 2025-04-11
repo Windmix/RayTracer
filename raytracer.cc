@@ -12,6 +12,8 @@ Raytracer::Raytracer(unsigned w, unsigned h, std::vector<Color>& frameBuffer, un
     height(h)
 {
     totalRaytracers = 0;
+    //frustum = get_identitymat4();
+    //view = get_identitymat4();
 }
 
 //------------------------------------------------------------------------------

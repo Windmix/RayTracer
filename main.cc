@@ -10,6 +10,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+
 #define degtorad(angle) angle * MPI / 180
 
 // Function to write PGM image
