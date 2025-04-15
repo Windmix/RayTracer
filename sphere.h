@@ -69,7 +69,7 @@ public:
 
             if (temp < maxDist && temp > minDist)
             {
-                vec3 p = ray.PointAt(temp);
+                vec3 p = PointAt(temp);
                 hit.p = p;
                 hit.normal = (p - this->center) * (1.0f / this->radius);
                 hit.t = temp;
@@ -78,7 +78,7 @@ public:
             }
             if (temp2 < maxDist && temp2 > minDist)
             {
-                vec3 p = ray.PointAt(temp2);
+                vec3 p = PointAt(temp2);
                 hit.p = p;
                 hit.normal = (p - this->center) * (1.0f / this->radius);
                 hit.t = temp2;
