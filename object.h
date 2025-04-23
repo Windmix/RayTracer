@@ -26,57 +26,51 @@ template<class TYPE>
 class Optional
 {
 public:
-    bool hasValue = false;
-    std::shared_ptr<HitResult> value = nullptr;
-
     Optional() {}
     Optional(HitResult hit) : hasValue(true)
     {
         this->value = std::make_shared<HitResult>(hit);
     }
-    
-};
 
-template <class TYPE>
-bool HasValue()
-{
-    Optional optional = Optional();
-    // check if this object has a value.
-    if (this->hasValue)
+    bool HasValue()
     {
-        // doublecheck the value
-        if (value == nullptr)
+        // check if this object has a value.
+        if (this->hasValue)
+        {
+            // doublecheck the value
+            if (value == nullptr)
+            {
+                return false;
+            }
+            if (value != nullptr)
+            {
+                // doublecheck the value content.
+                if (value->object == nullptr)
+                {
+                    return false;
+                }
+                if (value->normal.IsZero())
+                {
+                    return false;
+                }
+            }
+        }
+        else
         {
             return false;
         }
-        if (value != nullptr)
-        {
-            // doublecheck the value content.
-            if (value->object == nullptr)
-            {
-                return false;
-            }
-            if (value->normal.IsZero())
-            {
-                return false;
-            }
-        }
+        return true;
     }
-    else
+    HitResult Get()
     {
-        return false;
+        assert(this->HasValue());
+        return *value;
     }
-    return true;
-}
 
-template <class TYPE>
-HitResult Get()
-{
-    Optional optional = Optional();
-    assert(this->HasValue());
-    return *value;
-}
-
+private:
+    bool hasValue = false;
+    std::shared_ptr<HitResult> value = nullptr;
+};
 
 //------------------------------------------------------------------------------
 /**
@@ -108,10 +102,15 @@ public:
         delete name;
     }
 
+    virtual Optional<HitResult> Intersect(Ray ray, float maxDist) { return {}; };
+    virtual Color GetColor() = 0;
+    virtual Ray ScatterRay(Ray ray, vec3 point, vec3 normal) { return Ray({ 0,0,0 }, {1,1,1}); };
+    std::string GetName() { return std::string((const char*)name); }
+    unsigned long long GetId() { return this->id; }
+
+private:
     volatile bool isBigObject = false;
     volatile char* name;
     unsigned long long id;
     std::string purpose;
-
-
 };
