@@ -8,21 +8,6 @@
 #include "ray.h"
 #include "material.h"
 
-
-// OBJECT
-
-struct HitResult
-{
-    // hit point
-    vec3 p;
-    // normal
-    vec3 normal;
-    // hit object, or nullptr
-    Sphere* object = nullptr;
-    // intersection distance
-    float t = FLT_MAX;
-};
-
 // returns a random point on the surface of a unit sphere
 inline vec3 random_point_on_unit_sphere()
 {
@@ -37,57 +22,29 @@ inline vec3 random_point_on_unit_sphere()
 class Sphere
 {
 public:
-    //OBJ
-    volatile bool isBigObject = false;
-    volatile char* name;
-    unsigned long long id;
-    std::string purpose;
-
+    Object object;
     float radius;
     vec3 center;
     Material const* const material;
 
-    bool hasValue = false;
-    HitResult* value = nullptr;
-    Sphere(float radius, vec3 center, Material const* const material) : 
+    Sphere(float radius, vec3 center, Material const* const material, Object object) :
         radius(radius),
         center(center),
-        material(material)
+        material(material),
+        object(object)
     {
-        static unsigned long long idCounter = 0;
-        id = idCounter++;
 
-        // Reserve characters for naming this object something!
-        name = new char[256];
-        name[0] = 'U';
-        name[1] = 'n';
-        name[2] = 'n';
-        name[3] = 'a';
-        name[4] = 'm';
-        name[5] = 'e';
-        name[6] = 'd';
-        name[7] = '\0';
+    }
 
-        purpose = std::string("I don't have a purpose at the moment, but hopefully the programmer that overrides me will give me one. :)");
-    }
-    ~Sphere()
-    {
-        
-    }
+
+
+    
 
 };
 
-Ray ScatterRay(Ray ray, vec3 point, vec3 normal) 
-{
-    return BSDF(this->material, ray, point, normal);
-}
 
-Color GetColor()
+Optional<HitResult> Intersect(Ray ray, float maxDist, Sphere sphere)
 {
-    return material->color;
-}
-
-Optional Intersect(Ray ray, float maxDist)
     HitResult hit;
     vec3 oc = ray.b - this->center;
     vec3 dir = ray.m;
@@ -95,7 +52,7 @@ Optional Intersect(Ray ray, float maxDist)
 
     // early out if sphere is "behind" ray
     if (b > 0)
-        return Optional();
+        return Optional<HitResult>();
 
     float a = dot(dir, dir);
     float c = dot(oc, oc) - this->radius * this->radius;
@@ -116,7 +73,7 @@ Optional Intersect(Ray ray, float maxDist)
             hit.normal = (p - this->center) * (1.0f / this->radius);
             hit.t = temp;
             hit.object = this;
-            return Optional(hit);
+            return Optional<HitResult>(hit);
         }
         if (temp2 < maxDist && temp2 > minDist)
         {
@@ -125,44 +82,14 @@ Optional Intersect(Ray ray, float maxDist)
             hit.normal = (p - this->center) * (1.0f / this->radius);
             hit.t = temp2;
             hit.object = this;
-            return Optional(hit);
+            return Optional<HitResult>(hit);
         }
     }
 
     return Optional<HitResult>();
 }
 
-bool HasValue()
+Ray ScatterRay(Ray ray, vec3 point, vec3 normal) override
 {
-    // check if this object has a value.
-    if (this->hasValue)
-    {
-        // doublecheck the value
-        if (value == nullptr)
-        {
-            return false;
-        }
-        if (value != nullptr)
-        {
-            // doublecheck the value content.
-            if (value->object == nullptr)
-            {
-                return false;
-            }
-            if (value->normal.IsZero())
-            {
-                return false;
-            }
-        }
-    }
-    else
-    {
-        return false;
-    }
-    return true;
-}
-HitResult Get()
-{
-    assert(this->HasValue());
-    return *value;
+    return BSDF(this->material, ray, point, normal);
 }
