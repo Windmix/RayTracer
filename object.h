@@ -22,7 +22,6 @@ struct HitResult
     float t = FLT_MAX;
 };
 
-template<class TYPE>
 class Optional
 {
 public:
@@ -102,7 +101,7 @@ public:
         delete name;
     }
 
-    virtual Optional<HitResult> Intersect(Ray ray, float maxDist) { return {}; };
+    virtual Optional Intersect(Ray ray, float maxDist) { return {}; };
     virtual Color GetColor() = 0;
     virtual Ray ScatterRay(Ray ray, vec3 point, vec3 normal) { return Ray({ 0,0,0 }, {1,1,1}); };
     std::string GetName() { return std::string((const char*)name); }
