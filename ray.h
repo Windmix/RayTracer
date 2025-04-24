@@ -30,8 +30,8 @@ public:
    
 };
 
-inline vec3 PointAt(float t)
+inline vec3 PointAt(float t, Ray& ray)
 {
-    Ray ray;
+    
     return { ray.b + ray.m * t };
 }

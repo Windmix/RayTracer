@@ -61,6 +61,9 @@ int main(int argc, char** argv)
 
     Raytracer rt = Raytracer(width, height, framebuffer, raysPerPixel, maxBounces);
 
+    vec3 minBound(-100.0f, -100.0f, -100.0f);  // Initialize min boundary to large values
+    vec3 maxBound(100.0f, 100.0f, 100.0f); // Initialize max boundary to small values
+
     // Create some objects
     Material* mat = new Material();
     mat->type = "Lambertian";
@@ -71,63 +74,32 @@ int main(int argc, char** argv)
 
     for (int it = 0; it < ammountOfSpheres; it++)
     {
+        Material* mat = new Material();
+        mat->type = "Lambertian";
+        float r = RandomFloat();
+        float g = RandomFloat();
+        float b = RandomFloat();
+        mat->color = { r, g, b };
+        mat->roughness = RandomFloat();
+        const float span = 10.0f;
+
+        vec3 pos = 
         {
-            Material* mat = new Material();
-                mat->type = "Lambertian";
-                float r = RandomFloat();
-                float g = RandomFloat();
-                float b = RandomFloat();
-                mat->color = { r,g,b };
-                mat->roughness = RandomFloat();
-                const float span = 10.0f;
-                Sphere* ground = new Sphere(
-                    RandomFloat() * 0.7f + 0.2f,
-                    {
-                        RandomFloatNTP() * span,
-                        RandomFloat() * span + 0.2f,
-                        RandomFloatNTP() * span
-                    },
-                    mat);
-            rt.AddObject(ground);
-        }
-        {
-            Material* mat = new Material();
-            mat->type = "Conductor";
-            float r = RandomFloat();
-            float g = RandomFloat();
-            float b = RandomFloat();
-            mat->color = { r,g,b };
-            mat->roughness = RandomFloat();
-            const float span = 30.0f;
-            Sphere* ground = new Sphere(
-                RandomFloat() * 0.7f + 0.2f,
-                {
-                    RandomFloatNTP() * span,
-                    RandomFloat() * span + 0.2f,
-                    RandomFloatNTP() * span
-                },
-                mat);
-            rt.AddObject(ground);
-        }{
-            Material* mat = new Material();
-            mat->type = "Dielectric";
-            float r = RandomFloat();
-            float g = RandomFloat();
-            float b = RandomFloat();
-            mat->color = { r,g,b };
-            mat->roughness = RandomFloat();
-            mat->refractionIndex = 1.65f;
-            const float span = 25.0f;
-            Sphere* ground = new Sphere(
-                RandomFloat() * 0.7f + 0.2f,
-                {
-                    RandomFloatNTP() * span,
-                    RandomFloat() * span + 0.2f,
-                    RandomFloatNTP() * span
-                },
-                mat);
-            rt.AddObject(ground);
-        }
+            RandomFloatNTP() * span,
+            RandomFloat() * span + 0.2f,
+            RandomFloatNTP() * span
+        };
+
+        Sphere* ground = new Sphere(RandomFloat() * 1.5f + 0.5f, pos, mat);
+        rt.AddObject(ground);
+
+        // Update bounding box
+        minBound.x = std::min(minBound.x, pos.x - ground->radius);
+        minBound.y = std::min(minBound.y, pos.y - ground->radius);
+        minBound.z = std::min(minBound.z, pos.z - ground->radius);
+        maxBound.x = std::max(maxBound.x, pos.x + ground->radius);
+        maxBound.y = std::max(maxBound.y, pos.y + ground->radius);
+        maxBound.z = std::max(maxBound.z, pos.z + ground->radius);
     }
     // camera
     vec3 camPos = { 0, 1.0f, 10.0f };

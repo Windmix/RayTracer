@@ -4,6 +4,7 @@
 #include <float.h>
 #include <string>
 #include <memory>
+#include <atomic>
 
 class Object;
 
@@ -28,8 +29,14 @@ public:
     Optional() {}
     Optional(HitResult hit) : hasValue(true)
     {
-        this->value = std::make_shared<HitResult>(hit);
+        this->value = new HitResult(hit);
     }
+    ~Optional()
+    {
+        delete value;
+        value = nullptr;
+    }
+    
 
     bool HasValue()
     {
@@ -41,7 +48,7 @@ public:
             {
                 return false;
             }
-            if (value != nullptr)
+            else
             {
                 // doublecheck the value content.
                 if (value->object == nullptr)
@@ -68,7 +75,7 @@ public:
 
 private:
     bool hasValue = false;
-    std::shared_ptr<HitResult> value = nullptr;
+    HitResult* value = nullptr;
 };
 
 //------------------------------------------------------------------------------
@@ -79,37 +86,29 @@ class Object
 public:
     Object() 
     {
-        static unsigned long long idCounter = 0;
-        id = idCounter++;
-        // Reserve characters for naming this object something!
-        name = new char[256];
-        name[0] = 'U';
-        name[1] = 'n';
-        name[2] = 'n';
-        name[3] = 'a';
-        name[4] = 'm';
-        name[5] = 'e';
-        name[6] = 'd';
-        name[7] = '\0';
+        static std::atomic<unsigned long long> idCounter(0);
+        id = idCounter.fetch_add(1, std::memory_order_relaxed);
 
-        purpose = std::string("I don't have a purpose at the moment, but hopefully the programmer that overrides me will give me one. :)");
+        // Use std::string for name, eliminates manual memory management
+        name = "Unnamed";
+        purpose = "I don't have a purpose at the moment, but hopefully the programmer who overrides me will give me one. :)";
     }
 
-    virtual ~Object()
-    {
-        // clean up name!
-        delete name;
-    }
+    virtual ~Object() = default;
 
     virtual Optional Intersect(Ray ray, float maxDist) { return {}; };
     virtual Color GetColor() = 0;
-    virtual Ray ScatterRay(Ray ray, vec3 point, vec3 normal) { return Ray({ 0,0,0 }, {1,1,1}); };
-    std::string GetName() { return std::string((const char*)name); }
+    virtual Ray ScatterRay(Ray ray, vec3 point, vec3 normal) 
+    {
+        return Ray({ 0,0,0 }, {1,1,1});
+    };
+    std::string GetName() { return name; }
+
     unsigned long long GetId() { return this->id; }
 
 private:
     volatile bool isBigObject = false;
-    volatile char* name;
+    std::string name;
     unsigned long long id;
     std::string purpose;
 };

@@ -23,15 +23,18 @@ class Sphere : public Object
 {
 public:
     float radius;
+    float invRadius;
     vec3 center;
     Material const* const material;
+    float div;
 
     Sphere(float radius, vec3 center, Material const* const material) : 
         radius(radius),
         center(center),
-        material(material)
+        material(material),
+        invRadius(1.0f / radius)
     {
-
+       
     }
 
     ~Sphere() override
@@ -69,18 +72,18 @@ public:
 
             if (temp < maxDist && temp > minDist)
             {
-                vec3 p = PointAt(temp);
+                vec3 p = PointAt(temp, ray);
                 hit.p = p;
-                hit.normal = (p - this->center) * (1.0f / this->radius);
+                hit.normal = (p - this->center) * this->invRadius;
                 hit.t = temp;
                 hit.object = this;
                 return Optional(hit);
             }
             if (temp2 < maxDist && temp2 > minDist)
             {
-                vec3 p = PointAt(temp2);
+                vec3 p = PointAt(temp2, ray);
                 hit.p = p;
-                hit.normal = (p - this->center) * (1.0f / this->radius);
+                hit.normal = (p - this->center) * this->invRadius;
                 hit.t = temp2;
                 hit.object = this;
                 return Optional(hit);
