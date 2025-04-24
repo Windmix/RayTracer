@@ -10,14 +10,11 @@ class vec3
 public:
     vec3() : x(0), y(0), z(0)
     {
-        this->UpdateIsNormalizedVariable();
-        this->UpdateIsZeroVariable();
     }
 
     vec3(float x, float y, float z) : x(x), y(y), z(z)
     {
-        this->UpdateIsNormalizedVariable();
-        this->UpdateIsZeroVariable();
+
     }
 
     vec3(std::initializer_list<float> const il)
@@ -33,8 +30,7 @@ public:
             i++;
         }
 
-        this->UpdateIsNormalizedVariable();
-        this->UpdateIsZeroVariable();
+
     }
 
     ~vec3()
@@ -47,8 +43,6 @@ public:
         this->y = rhs.y;
         this->z = rhs.z;
 
-        this->UpdateIsNormalizedVariable();
-        this->UpdateIsZeroVariable();
     }
 
     vec3 operator+(vec3 const& rhs) { return {x + rhs.x, y + rhs.y, z + rhs.z};}
@@ -70,9 +64,9 @@ public:
 
 private:
     // Calculate if the vector is normalized
-    void UpdateIsNormalizedVariable();
+   // void UpdateIsNormalizedVariable();
     // Calculate if the vector is zero
-    void UpdateIsZeroVariable();
+    //void UpdateIsZeroVariable();
 
     volatile bool isNormalized;
     volatile bool isZero;
@@ -99,27 +93,27 @@ inline vec3 normalize(vec3 v)
     return vec3(ret);
 }
 
-inline void vec3::UpdateIsNormalizedVariable()
-{
-    if (len(*this) == 1.0)
-    {
-        this->isNormalized = true;
-        return;
-    }
-    
-    this->isNormalized = false;
-}
+//inline void vec3::UpdateIsNormalizedVariable()
+//{
+//    if (len(*this) == 1.0)
+//    {
+//        this->isNormalized = true;
+//        return;
+//    }
+//    
+//    this->isNormalized = false;
+//}
 
-inline void vec3::UpdateIsZeroVariable()
-{
-    if (len(*this) == 0.0)
-    {
-        this->isZero = true;
-        return;
-    }
-    
-    this->isZero = false;
-}
+//inline void vec3::UpdateIsZeroVariable()
+//{
+//    if (len(*this) == 0.0)
+//    {
+//        this->isZero = true;
+//        return;
+//    }
+//    
+//    this->isZero = false;
+//}
 
 // piecewise multiplication between two vectors
 inline vec3 mul(vec3 a, vec3 b)
