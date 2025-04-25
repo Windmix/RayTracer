@@ -63,10 +63,7 @@ public:
     }
 
 private:
-    // Calculate if the vector is normalized
-   // void UpdateIsNormalizedVariable();
-    // Calculate if the vector is zero
-    //void UpdateIsZeroVariable();
+
 
     volatile bool isNormalized;
     volatile bool isZero;
@@ -93,27 +90,6 @@ inline vec3 normalize(vec3 v)
     return vec3(ret);
 }
 
-//inline void vec3::UpdateIsNormalizedVariable()
-//{
-//    if (len(*this) == 1.0)
-//    {
-//        this->isNormalized = true;
-//        return;
-//    }
-//    
-//    this->isNormalized = false;
-//}
-
-//inline void vec3::UpdateIsZeroVariable()
-//{
-//    if (len(*this) == 0.0)
-//    {
-//        this->isZero = true;
-//        return;
-//    }
-//    
-//    this->isZero = false;
-//}
 
 // piecewise multiplication between two vectors
 inline vec3 mul(vec3 a, vec3 b)
