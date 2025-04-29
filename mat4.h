@@ -276,3 +276,12 @@ rotationy(float angle)
 			 -s, 0, c, 0,
               0, 0, 0, 1 };
 }
+
+inline mat4
+translation(const vec3& pos)
+{
+    return { 1, 0, 0, 0,
+             0, 1, 0, 0,
+             0, 0, 1, 0,
+             pos.x, pos.y, pos.z, 1 };
+}

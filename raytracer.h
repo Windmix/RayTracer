@@ -6,11 +6,13 @@
 #include "ray.h"
 #include "sphere.h"
 #include <float.h>
+#include <thread>
+#include "Bvh.h"
+
 
 //------------------------------------------------------------------------------
 /**
 */
-
 
 class Raytracer
 {
@@ -22,13 +24,13 @@ public:
     
     unsigned totalRaytracers;
     // start raytracing!
-    void Raytrace();
+    void RaytraceWithBVH(int startPixel, int count, BVHNode* bvhRoot);
 
     // add object to scene
     void AddObject(Object* obj);
 
     // single raycast, find object
-    static bool Raycast(Ray ray, vec3& hitPoint, vec3& hitNormal, Object*& hitObject, float& distance, std::vector<Object*> objects);
+    bool RaycastBVH(Ray ray, BVHNode* node, vec3& hitPoint, vec3& hitNormal, Object*& hitObject, float& distance);
 
     // set camera matrix
     void SetViewMatrix(mat4 val);
@@ -39,13 +41,14 @@ public:
     // update matrices. Called automatically after setting view matrix
     void UpdateMatrices();
 
+    bool RayIntersectsAABB(const Ray& ray, const AABB& box);
     // trace a path and return intersection color
     // n is bounce depth
-    Color TracePath(Ray ray, unsigned n);
+    Color TraceWithBVH(Ray* rays, BVHNode* node, unsigned n);
 
     // get the color of the skybox in a direction
     Color Skybox(vec3 direction);
-
+    void MultiThreadingRayTraceWithBVH(BVHNode* bvhRoot, int threadCount);
     std::vector<Color>& frameBuffer;
     
     // rays per pixel
@@ -72,11 +75,18 @@ public:
 
 private:
     std::vector<Object*> objects;
+    std::vector<Primitive> allPrimitives;
 };
 
 inline void Raytracer::AddObject(Object* o)
 {
     this->objects.push_back(o);
+
+    // If the object is a Sphere, add it to allPrimitives as a Primitive
+    if (Sphere* sphere = dynamic_cast<Sphere*>(o))
+    {
+        allPrimitives.emplace_back(sphere);
+    }
 }
 
 inline void Raytracer::SetViewMatrix(mat4 val)

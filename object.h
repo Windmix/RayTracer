@@ -24,51 +24,14 @@ struct HitResult
     float t = FLT_MAX;
 };
 
-class Optional
-{
-public:
-    Optional() {}
-    Optional(HitResult hit) : hasValue(true)
-    {
-        this->value = new HitResult(hit);
-    }
-    ~Optional()
-    {
-        delete value;
-        value = nullptr;
-    }
-    
 
-    bool HasValue()
-    {
-        if (!this->hasValue || value->normal.IsZero())
-    {
-        return false;
-    }
-
-    return true;
-    }
-    HitResult Get()
-    {
-        assert(this->HasValue());
-        return *value;
-    }
-
-private:
-    bool hasValue = false;
-    HitResult* value = nullptr;
-};
 
 //------------------------------------------------------------------------------
 /**
 */
 struct Object
 {
-    volatile bool isBigObject = false;
-    unsigned long long id;
 
-    float radius;
-    vec3 center;
 
     Object() 
     {
@@ -77,8 +40,9 @@ struct Object
     }
 
     virtual ~Object() = default;
-
-    virtual Optional Intersect(Ray ray, float maxDist) = 0;
+    volatile bool isBigObject = false;
+    unsigned long long id;
+    virtual HitResult Intersect(Ray ray, float maxDist) = 0;
     virtual Color GetColor() = 0;
     virtual Ray ScatterRay(Ray ray, vec3 point, vec3 normal) = 0;
 

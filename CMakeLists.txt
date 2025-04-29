@@ -50,6 +50,8 @@ SET(files
 		material.h
 		material.cc
 		stb_image_write.h
+		Bvh.h
+		Bvh.cc
 	)
 SOURCE_GROUP("trayracer" FILES ${files})
 
