@@ -25,10 +25,10 @@ public:
     float radius;
     float invRadius;
     vec3 center;
-    Material const* const material;
+    Material*  material;
     float div;
 
-    Sphere(float radius, vec3 center, Material const* const material) : 
+    Sphere(float radius, vec3 center, Material* material) : 
         radius(radius),
         center(center),
         material(material),

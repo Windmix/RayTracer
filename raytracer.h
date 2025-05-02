@@ -73,20 +73,13 @@ public:
     // Go from canonical to view frustum
     mat4 frustum;
 
-private:
     std::vector<Object*> objects;
-    std::vector<Primitive> allPrimitives;
 };
 
 inline void Raytracer::AddObject(Object* o)
 {
     this->objects.push_back(o);
 
-    // If the object is a Sphere, add it to allPrimitives as a Primitive
-    if (Sphere* sphere = dynamic_cast<Sphere*>(o))
-    {
-        allPrimitives.emplace_back(sphere);
-    }
 }
 
 inline void Raytracer::SetViewMatrix(mat4 val)

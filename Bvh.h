@@ -8,20 +8,15 @@
 
 struct AABB // Axis-Aligned Bounding Box
 {
-    vec3 min, max;
+    vec3 min = { INFINITY };
+    vec3 max= { -INFINITY };
 
-    AABB() :
-        min(std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()),   // Initialize all components of min
-        max(std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest(), std::numeric_limits<float>::lowest()) // Initialize all components of max
+    vec3 Center()
     {
+        return (max + min) * 0.5f;
     }
 
-    AABB(const vec3& min, const vec3& max) : min(min), max(max) {}
 
-    void expand(const AABB& other);
-   
-
-    float surfaceArea();
 };
 
 // BVH Node
@@ -31,47 +26,29 @@ struct BVHNode
     BVHNode* left = nullptr;
     BVHNode* right = nullptr;
 
-    int firstPrim = 0;     // Index of first primitive (used for leaf nodes)
-    int primCount = 0;     // Number of primitives in this node
-
-    BVHNode(const AABB& bounds) : bounds(bounds) {}
     ~BVHNode() 
     {
         delete left;
         delete right;
     }
+   
 
-    bool isLeaf() const { return primCount > 0; }
+    int sphereIndex = 0;     // Index of first primitive (used for leaf nodes)
+    int sphereCount = 0;     // Number of primitives in this node
 };
 
-struct Primitive  
-{
-    AABB bounds; // Bounding box for the sphere
-    Sphere* sphere;  // Pointer to the actual sphere object
-
-    // Constructor for a Sphere primitive
-    Primitive(Sphere* sphere)
-        : sphere(sphere)
-    {
-        // Set the bounds of the primitive to match the bounding box of the sphere
-        bounds.min = sphere->center - vec3(sphere->radius, sphere->radius, sphere->radius);
-        bounds.max = sphere->center + vec3(sphere->radius, sphere->radius, sphere->radius);
-    }
-
-    bool intersecting(Ray& ray, float& t);
-};
 
 struct BVH
 {
 public:
     BVHNode* root = nullptr;
-
+    void expand(Sphere& sphere, AABB& aabb);
     // Helper function to build the BVH
-    BVHNode* build(std::vector<Primitive>& primitives);
-private:
+    void build(std::vector<Object*>& objs);
 
+    static bool intersecting(Ray& ray, AABB& aabb);
     // Recursive helper function for BVH construction
-    BVHNode* buildRecursive(std::vector<AABB>& aabbs, std::vector<Primitive*>& prims, int start, int end);
+    BVHNode* buildRecursive(std::vector<Object*>& objs, BVHNode* parent, int depth);
 };
 
 

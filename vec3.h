@@ -16,22 +16,9 @@ public:
     {
 
     }
-
-    vec3(std::initializer_list<float> const il)
+    vec3(float v) : x(v), y(v), z(v)
     {
-        assert(il.size() == 3);
-
-        int i = 0;
-        for (auto v : il)
-        {
-            float* d = reinterpret_cast<float*>(this);
-            d += i;
-            *d = v;
-            i++;
-        }
-
-
-    }
+    };
 
     ~vec3()
     {
@@ -47,6 +34,7 @@ public:
 
     vec3 operator+(vec3 const& rhs) { return {x + rhs.x, y + rhs.y, z + rhs.z};}
     vec3 operator-(vec3 const& rhs) { return {x - rhs.x, y - rhs.y, z - rhs.z};}
+    float operator[](int i) { return i == 0 ? x : i == 1 ? y : z; }
     vec3 operator-() { return {-x, -y, -z};}
     vec3 operator*(float const c) { return {x * c, y * c, z * c};}
 

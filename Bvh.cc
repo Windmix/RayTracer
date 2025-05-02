@@ -1,79 +1,92 @@
 #include "Bvh.h"
 #include <iostream>
+#include <algorithm>
 
-void AABB::expand(const AABB& other)
+void BVH::expand(Sphere& sphere, AABB& aabb)
 {
-    min.x = std::min(min.x, other.min.x);
-    min.y = std::min(min.y, other.min.y);
-    min.z = std::min(min.z, other.min.z);
-    max.x = std::max(max.x, other.max.x);
-    max.y = std::max(max.y, other.max.y);
-    max.z = std::max(max.z, other.max.z);
+    aabb.min.x = std::min(aabb.min.x, sphere.center.x - sphere.radius);
+    aabb.min.y = std::min(aabb.min.y, sphere.center.y - sphere.radius);
+    aabb.min.z = std::min(aabb.min.z, sphere.center.z - sphere.radius);
+    aabb.max.x = std::max(aabb.max.x, sphere.center.x + sphere.radius);
+    aabb.max.y = std::max(aabb.max.y, sphere.center.y + sphere.radius);
+    aabb.max.z = std::max(aabb.max.z, sphere.center.z + sphere.radius);
 }
 
-float AABB::surfaceArea()
+
+bool BVH::intersecting(Ray& ray, AABB& aabb)
 {
-    vec3 d = max - min;
-    return 2.0f * (d.x * d.y + d.x * d.z + d.y * d.z);
+    // r.dir is unit direction vector of ray
+    float dirfracX = 1.0f / ray.m.x;
+    float dirfracY = 1.0f / ray.m.y;
+    float dirfracZ = 1.0f / ray.m.z;
+    // lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+
+    // r.org is origin of ray
+    float t1 = (aabb.min.x - ray.b.x) * dirfracX;
+    float t2 = (aabb.max.x - ray.b.x) * dirfracX;
+    float t3 = (aabb.min.y - ray.b.y) * dirfracY;
+    float t4 = (aabb.max.y - ray.b.y) * dirfracY;
+    float t5 = (aabb.min.z - ray.b.z) * dirfracZ;
+    float t6 = (aabb.max.z - ray.b.z) * dirfracZ;
+
+    float tmin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
+    float tmax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
+
+    return tmax >= tmin && tmax > 0;
 }
 
-bool Primitive::intersecting(Ray& ray, float& t)
+void BVH::build(std::vector<Object*>& objs)
 {
+    root = new BVHNode();
+    for (auto obj : objs)
+    {
+        expand(*dynamic_cast<Sphere*>(obj), root->bounds);
+    }
+    root->sphereCount = objs.size();
 
-    // Use the sphere's intersection method
-    HitResult hit = sphere->Intersect(ray, t);
-    if (hit.object != nullptr)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-      // Return true if there was a hit
+
+    // Begin recursive build
+     buildRecursive(objs, root, 0);
 }
 
-BVHNode* BVH::build(std::vector<Primitive>& primitives)
+BVHNode* BVH::buildRecursive(std::vector<Object*>& objs, BVHNode* parent, int depth = 0)
 {
-    std::vector<AABB> aabbs;
-    std::vector<Primitive*> prims;
+    const int MaxDepth = 32;
 
-    for (auto& primitive : primitives)
+    if (depth >= MaxDepth || parent->sphereCount <= 2)
     {
-        aabbs.push_back(primitive.bounds);
-        prims.push_back(&primitive);
+        return nullptr;
     }
 
-    return buildRecursive(aabbs, prims, 0, aabbs.size());
-}
+    parent->left = new BVHNode();
+    parent->right = new BVHNode();
+    
+    parent->left->sphereIndex = parent->sphereIndex;
+    parent->right->sphereIndex = parent->sphereIndex;
 
-BVHNode* BVH::buildRecursive(std::vector<AABB>& aabbs, std::vector<Primitive*>& prims, int start, int end)
-{
-    if (end - start == 1)
+    vec3 diagonal = parent->bounds.max - parent->bounds.min;
+    int splitAxis = (diagonal.x >= diagonal.y && diagonal.x >= diagonal.z) ? 0  // X is longest
+        : (diagonal.y >= diagonal.z) ? 1                                        // Y is longest
+        : 2;                                                                    // Z is longest
+
+
+    for (int i = parent->sphereIndex; i < parent->sphereIndex + parent->sphereCount; i++)
     {
-        // Leaf node
-        BVHNode* node = new BVHNode(aabbs[start]);
-        node->primCount = 1;
-        node->firstPrim = start;
-        return node;
-    }
+        bool isSideLeft = ((Sphere*)objs[i])->center.y < parent->bounds.Center()[splitAxis];
 
-    // Compute the bounding box for this node
-    AABB nodeBounds;
-    for (int i = start; i < end; ++i)
-    {
-        nodeBounds.expand(aabbs[i]);
-    }
+        BVHNode* child = isSideLeft ? parent->left : parent->right;
+        expand(*(Sphere*)objs[i], child->bounds);
+        child->sphereCount++;
 
-    // Split the primitives(simplified median split)
-    int mid = (start + end) / 2;
-    std::nth_element(prims.begin() + start, prims.begin() + mid, prims.begin() + end, [&](Primitive* a, Primitive* b)
+        if (isSideLeft)
         {
-            return a->bounds.min.x < b->bounds.min.x;  // Split by x-axis; you could use other strategies for better performance
-        });
-    BVHNode* node = new BVHNode(nodeBounds);
-    node->left = buildRecursive(aabbs, prims, start, mid);
-    node->right = buildRecursive(aabbs, prims, mid, end);
-
-    return node;
+            int swap = child->sphereIndex + child->sphereCount - 1; 
+            std::swap(objs[i], objs[swap]);
+            parent->right->sphereIndex++;
+        }
+        
+    }
+    buildRecursive(objs, parent->left, depth + 1);
+    buildRecursive(objs, parent->right, depth + 1);
 }
+

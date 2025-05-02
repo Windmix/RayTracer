@@ -104,62 +104,58 @@ Color Raytracer::TraceWithBVH(Ray* rays, BVHNode* node, unsigned n)
 /**
 */
 bool
-Raytracer::RaycastBVH(Ray ray, BVHNode* node, vec3& hitPoint, vec3& hitNormal, Object*& hitObject, float& distance)
+Raytracer::RaycastBVH(Ray ray, BVHNode* root, vec3& hitPoint, vec3& hitNormal, Object*& hitObject, float& distance)
 {
     bool hitSomething = false;
-    float closestT = FLT_MAX;
     HitResult closestHit;
+    HitResult hit;
+    int numHits = 0;
 
-    if (!node || !RayIntersectsAABB(ray, node->bounds))
+    if (!root || !RayIntersectsAABB(ray, root->bounds))
     {
         return false;
     }
 
-    // First, sort the world objects
-   // std::sort(world.begin(), world.end());
-
-    if (node->isLeaf())
+    BVHNode* nodeStack[10];
+    int stackIndex = 0;
+    nodeStack[stackIndex++] = root;
+    
+    while (stackIndex > 0)
     {
-        for (int i = node->firstPrim; i < node->firstPrim + node->primCount; ++i)
+        BVHNode* node = nodeStack[--stackIndex];
+        if (BVH::intersecting(ray, node->bounds))
         {
-            Primitive& primitive = allPrimitives[i];
-            float t;
-            if (primitive.intersecting(ray, t) && t < closestT)
+            if (node->sphereIndex <= 0)
             {
-                closestT = t;
-                closestHit.p = ray.b + ray.m * t;
-                closestHit.normal = normalize((closestHit.p - primitive.sphere->center));
-                closestHit.object = primitive.sphere;
-                hitSomething = true;
+                for (int i = node->sphereIndex; i < node->sphereIndex + node->sphereCount; ++i)
+                {
+
+                    auto opt = objects[i]->Intersect(ray, closestHit.t);
+                    if (opt.object != nullptr)
+                    {
+                        hit = opt;
+                        assert(hit.t < closestHit.t);
+                        closestHit = hit;
+                        closestHit.object = opt.object;
+                        hitSomething = true;
+                        numHits++;
+                    }
+                }
+
+            }
+            else
+            {
+                nodeStack[stackIndex++] = node->left;
+                nodeStack[stackIndex++] = node->right;
             }
         }
     }
-    else
-    {
-        // Recursively test children
-        vec3 childHitPoint, childHitNormal;
-        Object* childHitObject = nullptr;
-        float childDistance;
 
-        if (RaycastBVH(ray, node->left, childHitPoint, childHitNormal, childHitObject, childDistance) && (childDistance < closestT))
-        {
-            closestT = childDistance;
-            hitPoint = childHitPoint;
-            hitNormal = childHitNormal;
-            hitObject = childHitObject;
-            hitSomething = true;
-        }
+    hitPoint = closestHit.p;
+    hitNormal = closestHit.normal;
+    hitObject = closestHit.object;
+    distance = closestHit.t;
 
-        if (RaycastBVH(ray, node->right, childHitPoint, childHitNormal, childHitObject, childDistance) && (childDistance < closestT))
-        {
-            closestT = childDistance;
-            hitPoint = childHitPoint;
-            hitNormal = childHitNormal;
-            hitObject = childHitObject;
-            hitSomething = true;
-        }
-    }
-    distance = closestT;
     return hitSomething;
 }
 
